@@ -2,7 +2,7 @@
 <title>%s</title>
 
 <body style="margin:0;padding:0;">
-<iframe src="%s" style="border:medium none;width:100vw;height:100vh;" frameborder="0" id="iframe"></iframe>
+<iframe src="%s" style="border:medium none;width:100vw;height:100vh;" frameborder="0" id="iframe" style="margin:0;padding:0;"></iframe>
 </body>
 </html>
 <script>
@@ -11,11 +11,8 @@
     var requestMap = {};
     var iframe;
     window.onload = function () {
-
         iframe = document.getElementById("iframe");
         startWebsocket();
-
-
     }
 
     function startWebsocket() {

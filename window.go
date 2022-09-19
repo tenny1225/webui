@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -47,7 +48,7 @@ type window struct {
 	closeChannel  chan int
 	currentUrl    string
 	addr          string
-	isInit        bool
+	inited        bool
 	wl            *webSocketListener
 	wlWaitChannel chan int
 }
@@ -59,10 +60,15 @@ func (w *window) Run(fun func()) {
 	w.RunAndBindPort("8000", fun)
 }
 func (w *window) RunAndBindPort(addr string, fun func()) {
+	if strings.HasPrefix(addr, ":") {
+		addr = addr[1:]
+	}
 	w.addr = addr
 	go w.startHttpService(addr)
 	<-time.Tick(time.Second)
-	go fun()
+	if fun!=nil{
+		go fun()
+	}
 	<-w.closeChannel
 }
 func (win *window) startHttpService(addr string) {
@@ -91,11 +97,13 @@ func (win *window) startHttpService(addr string) {
 		f := path.Base(r.URL.Path)
 		var buf []byte
 		if f == DEFAULT_HTML_NAME {
-			html := fmt.Sprintf(HTML,
+			html := fmt.Sprintf(DEFAULT_HTML,
 				win.title,
 				win.currentUrl,
 				win.addr)
 			buf = []byte(html)
+		} else if f == NOT_FOUND_CHROME_HTML_NAME {
+			buf = []byte(NOT_FOUND_CHROME_HTML)
 		} else {
 			var e error
 			fn := path.Join(win.staticPath, f)
@@ -108,30 +116,35 @@ func (win *window) startHttpService(addr string) {
 
 		w.Write(buf)
 	})
+
 	http.ListenAndServe(":"+addr, nil)
 }
 func (w *window) startChrome(url string) {
-	reader := bytes.NewBuffer([]byte{})
+	commandReader := bytes.NewBuffer([]byte{})
 	go func() {
+		defer w.Close()
 		bash, args := GetLocalChromeBash(w.x, w.y, w.w, w.h, url)
+		if bash == "" {
+			openDefaultWebView(fmt.Sprintf("http://localhost:%s/html/%s", w.addr, NOT_FOUND_CHROME_HTML_NAME))
+			time.Sleep(time.Second * 5)
+			return
+		}
 		cmd := exec.Command(bash, args...)
-		cmd.Stdout = reader
+		cmd.Stdout = commandReader
 		cmd.Start()
 		cmd.Wait()
-		w.Close()
 	}()
-	reader.Next(10)
-
+	commandReader.Next(10)
 }
 func (w *window) Close() {
 	w.closeChannel <- 1
 }
 
 func (w *window) Navigation(staticHtmlPath string) {
-	c := make(chan int, 1)
+	initChannel := make(chan int, 1)
 	go func() {
-		if !w.isInit {
-			w.isInit = true
+		if !w.inited {
+			w.inited = true
 			w.startChrome(fmt.Sprintf("http://localhost:%s/html/%s", w.addr, DEFAULT_HTML_NAME))
 		}
 		w.currentUrl = fmt.Sprintf("http://localhost:%s/html/%s", w.addr, staticHtmlPath)
@@ -139,11 +152,11 @@ func (w *window) Navigation(staticHtmlPath string) {
 			<-w.wlWaitChannel
 		}
 		w.wl.navigation(`document.getElementById("iframe").src="`+w.currentUrl+`"`, func() {
-			c <- 1
+			initChannel <- 1
 		})
 
 	}()
-	<-c
+	<-initChannel
 }
 
 func (s *window) BindWithName(key string, obj interface{}) {

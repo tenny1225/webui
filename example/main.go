@@ -15,7 +15,7 @@ func (x *X) Gds() {
 	x.w.Eval(`document.getElementById("xz").style.color="#ff3300";`,nil)
 }
 func main() {
-	w := webui.NewWindow("xz", 300,300,400, 300, "./html")
+	w := webui.NewWindow("xz", 300,300,400, 500, "./html")
 	w.Run(func() {
 		w.Navigation("xz.html")
 		w.Bind(&X{w})

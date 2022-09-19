@@ -12,7 +12,7 @@
     <session id="-18395834">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="1" />
+          <entry key="project.closed" value="2" />
           <entry key="project.open.time.0" value="1" />
           <entry key="project.open.time.1" value="1" />
           <entry key="project.open.time.27" value="1" />
@@ -43,6 +43,7 @@
         <counts>
           <entry key="go" value="7488" />
           <entry key="html" value="588" />
+          <entry key="md" value="63" />
           <entry key="mod" value="24" />
         </counts>
       </usages-collector>
@@ -51,6 +52,7 @@
           <entry key="DTD" value="24" />
           <entry key="Go" value="7488" />
           <entry key="HTML" value="588" />
+          <entry key="Markdown" value="63" />
         </counts>
       </usages-collector>
     </session>
@@ -60,8 +62,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../webui/example/main.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="304">
-              <caret line="16" column="13" lean-forward="true" selection-start-line="16" selection-start-column="13" selection-end-line="16" selection-end-column="13" />
+            <state>
+              <caret selection-end-line="23" selection-end-column="1" />
               <folding>
                 <element signature="e#14#32#0" expanded="true" />
               </folding>
@@ -114,7 +116,9 @@
         <entry file="file://$PROJECT_DIR$/../webui/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor />
+              <first_editor relative-caret-position="228">
+                <caret line="12" column="1" selection-start-line="12" selection-start-column="1" selection-end-line="12" selection-end-column="1" />
+              </first_editor>
               <second_editor />
             </state>
           </provider>
@@ -189,6 +193,7 @@
         <option value="$PROJECT_DIR$/go.mod" />
         <option value="$PROJECT_DIR$/example/main.go" />
         <option value="$PROJECT_DIR$/../webui/example/main.go" />
+        <option value="$PROJECT_DIR$/../webui/README.md" />
       </list>
     </option>
   </component>
@@ -199,10 +204,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="340" />
-    <option name="y" value="97" />
+    <option name="x" value="211" />
+    <option name="y" value="127" />
     <option name="width" value="1647" />
-    <option name="height" value="754" />
+    <option name="height" value="906" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -216,6 +221,11 @@
             <path>
               <item name="webui" type="b2602c69:ProjectViewProjectNode" />
               <item name="webui" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="webui" type="b2602c69:ProjectViewProjectNode" />
+              <item name="webui" type="462c0819:PsiDirectoryNode" />
+              <item name="example" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -410,10 +420,9 @@
     </recent_temporary>
   </component>
   <component name="ToolWindowManager">
-    <frame x="434" y="80" width="1647" height="754" extended-state="0" />
-    <editor active="true" />
+    <frame x="211" y="127" width="1647" height="906" extended-state="0" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.29221183" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.11775701" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -425,7 +434,7 @@
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Terminal" order="9" visible="true" weight="0.42739275" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="9" visible="true" weight="0.14248021" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -570,16 +579,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../webui/example/main.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="304">
-          <caret line="16" column="13" lean-forward="true" selection-start-line="16" selection-start-column="13" selection-end-line="16" selection-end-column="13" />
-          <folding>
-            <element signature="e#14#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../webui/const.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1558">
@@ -594,10 +593,22 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../webui/example/main.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret selection-end-line="23" selection-end-column="1" />
+          <folding>
+            <element signature="e#14#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/../webui/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor />
+          <first_editor relative-caret-position="228">
+            <caret line="12" column="1" selection-start-line="12" selection-start-column="1" selection-end-line="12" selection-end-column="1" />
+          </first_editor>
           <second_editor />
         </state>
       </provider>

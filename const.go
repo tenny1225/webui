@@ -1,12 +1,12 @@
 package webui
 
 
-const HTML=`
+const DEFAULT_HTML=`
 <html>
 <title>%s</title>
 
 <body style="margin:0;padding:0;">
-<iframe src="%s" style="border:medium none;width:100vw;height:100vh;" frameborder="0" id="iframe"></iframe>
+<iframe src="%s" style="border:medium none;width:100vw;height:100vh;" frameborder="0" id="iframe" style="margin:0;padding:0;"></iframe>
 </body>
 </html>
 <script>
@@ -93,8 +93,11 @@ const HTML=`
 
 </script>
 `
+const NOT_FOUND_CHROME_HTML  = `
+<h1>Not found chrome in computer,please install it first!</h1>
+`
 const DEFAULT_HTML_NAME = "DEFAULT.html"
-
+const NOT_FOUND_CHROME_HTML_NAME = "NOT_FOUND_CHROME.html"
 var CHROME_PATH  = []string{
 	`C:\Program Files (x86)\Google\Chrome`,
 	``,

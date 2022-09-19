@@ -3,6 +3,7 @@ package webui
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"runtime"
 )
 
@@ -42,12 +43,12 @@ func GetLocalChromeBash(x,y,w, h int64, url string) (string, []string) {
 	args = append(args, fmt.Sprintf("--window-size=%d,%d", w, h))
 	args = append(args, "--remote-debugging-port=0")
 	args = append(args, fmt.Sprintf("--window-position=%d,%d",x,y))
-	return GetLocalChromePath(), args
+	return localChromePath(), args
 
 }
 
 
-func GetLocalChromePath() string {
+func localChromePath() string {
 	if path, ok := os.LookupEnv("LORCACHROME"); ok {
 		if _, err := os.Stat(path); err == nil {
 			return path
@@ -98,3 +99,21 @@ func GetLocalChromePath() string {
 }
 
 
+var commands = map[string]string{
+	"windows": "cmd /c start",
+	"darwin":  "open",
+	"linux":   "xdg-open",
+}
+
+var Version = "0.1.0"
+
+// Open calls the OS default program for uri
+func openDefaultWebView(uri string) error {
+	run, ok := commands[runtime.GOOS]
+	if !ok {
+		return fmt.Errorf("don't know how to open things on %s platform", runtime.GOOS)
+	}
+
+	cmd := exec.Command(run, uri)
+	return cmd.Start()
+}
