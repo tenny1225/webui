@@ -116,7 +116,16 @@ func (win *window) startHttpService(addr string) {
 
 		w.Write(buf)
 	})
-
+	http.HandleFunc("/remote", func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		url := r.FormValue("url")
+		rep,e:=http.Get(url)
+		if e!=nil{
+			w.Write([]byte(e.Error()))
+			return
+		}
+		io.Copy(w,rep.Body)
+	})
 	http.ListenAndServe(":"+addr, nil)
 }
 func (w *window) startChrome(url string) {
@@ -147,7 +156,11 @@ func (w *window) Navigation(staticHtmlPath string) {
 			w.inited = true
 			w.startChrome(fmt.Sprintf("http://localhost:%s/html/%s", w.addr, DEFAULT_HTML_NAME))
 		}
-		w.currentUrl = fmt.Sprintf("http://localhost:%s/html/%s", w.addr, staticHtmlPath)
+		if strings.HasPrefix(staticHtmlPath,"http://")||strings.HasPrefix(staticHtmlPath,"https://"){
+			w.currentUrl =  fmt.Sprintf("http://localhost:%s/remote?url=%s", w.addr, staticHtmlPath)
+		}else{
+			w.currentUrl = fmt.Sprintf("http://localhost:%s/html/%s", w.addr, staticHtmlPath)
+		}
 		if w.wl == nil {
 			<-w.wlWaitChannel
 		}

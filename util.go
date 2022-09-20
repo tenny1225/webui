@@ -35,11 +35,16 @@ var defaultChromeArgs = []string{
 	"--disable-ipc-flooding-protection",
 	"--disable-popup-blocking",
 	"--disable-prompt-on-repost",
+	//"--disable-web-security",
 }
 
 func GetLocalChromeBash(x,y,w, h int64, url string) (string, []string) {
 	args := append(defaultChromeArgs, fmt.Sprintf("--app=%s", url))
-	args = append(args, fmt.Sprintf("--user-data-dir=%s", "/tmp"))
+	userDir:="/tmp"
+	if runtime.GOOS=="windows"{
+		userDir="C:\tmp"
+	}
+	args = append(args, fmt.Sprintf("--user-data-dir=%s", userDir))
 	args = append(args, fmt.Sprintf("--window-size=%d,%d", w, h))
 	args = append(args, "--remote-debugging-port=0")
 	args = append(args, fmt.Sprintf("--window-position=%d,%d",x,y))
@@ -99,16 +104,15 @@ func localChromePath() string {
 }
 
 
-var commands = map[string]string{
-	"windows": "cmd /c start",
-	"darwin":  "open",
-	"linux":   "xdg-open",
-}
 
-var Version = "0.1.0"
 
 // Open calls the OS default program for uri
 func openDefaultWebView(uri string) error {
+	commands := map[string]string{
+		"windows": "cmd /c start",
+		"darwin":  "open",
+		"linux":   "xdg-open",
+	}
 	run, ok := commands[runtime.GOOS]
 	if !ok {
 		return fmt.Errorf("don't know how to open things on %s platform", runtime.GOOS)
