@@ -4,7 +4,6 @@ package webui
 const DEFAULT_HTML=`
 <html>
 <title>%s</title>
-
 <body style="margin:0;padding:0;background-color:#ffffff;">
 <iframe src="%s" style="border:medium none;width:100vw;height:100vh;" frameborder="0" id="iframe" style="margin:0;padding:0;"></iframe>
 </body>
@@ -15,27 +14,20 @@ const DEFAULT_HTML=`
     var requestMap = {};
     var iframe;
     window.onload = function () {
-
         iframe = document.getElementById("iframe");
         startWebsocket();
-
-
     }
-
     function startWebsocket() {
         websocket = new WebSocket(wsServer);
         websocket.onopen = function (evt) {
             console.log(evt)
         };
-
         websocket.onclose = function (evt) {
             setTimeout(() => {
                 startWebsocket();
             }, 1000)
         };
-
         websocket.onmessage = function (evt) {
-
             let msg = JSON.parse(evt.data);
             console.log(msg)
             if (msg.Type == "Navigation") {
@@ -98,7 +90,3 @@ const NOT_FOUND_CHROME_HTML  = `
 `
 const DEFAULT_HTML_NAME = "DEFAULT.html"
 const NOT_FOUND_CHROME_HTML_NAME = "NOT_FOUND_CHROME.html"
-var CHROME_PATH  = []string{
-	`C:\Program Files (x86)\Google\Chrome`,
-	``,
-}

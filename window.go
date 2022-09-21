@@ -18,7 +18,7 @@ type Window interface {
 	Run(fun func())
 	RunAndBindPort(port string, fun func())
 	Close()
-	Navigation(staticHtmlPath string)
+	Navigation(htmlPath string)
 	BindWithName(key string, obj interface{})
 	Bind(obj interface{})
 	RemoveBind(key string)
@@ -116,16 +116,78 @@ func (win *window) startHttpService(addr string) {
 
 		w.Write(buf)
 	})
-	http.HandleFunc("/remote", func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
-		url := r.FormValue("url")
-		rep,e:=http.Get(url)
-		if e!=nil{
-			w.Write([]byte(e.Error()))
-			return
-		}
-		io.Copy(w,rep.Body)
-	})
+	//http.HandleFunc("/remote", func(w http.ResponseWriter, r *http.Request) {
+	//	r.ParseForm()
+	//	uri := r.FormValue("url")
+	//	rep,e:=http.Get(uri)
+	//
+	//	if e!=nil{
+	//		w.Write([]byte(e.Error()))
+	//		return
+	//	}
+	//	doc,e:=goquery.NewDocumentFromReader(rep.Body)
+	//	if e!=nil{
+	//		w.Write([]byte(e.Error()))
+	//		return
+	//	}
+	//	URL,e:=url.Parse(uri)
+	//	if e!=nil{
+	//		w.Write([]byte(e.Error()))
+	//		return
+	//	}
+	//
+	//	node:=doc.Find("link")
+	//	for i:=0;i<node.Length();i++{
+	//		for n,attr:=range node.Get(i).Attr{
+	//			if attr.Key=="href"&&!strings.HasPrefix(attr.Val,"http://")&&!strings.HasPrefix(attr.Val,"https://"){
+	//
+	//				attr.Val=URL.Scheme+"://"+URL.Host+attr.Val
+	//
+	//				node.Get(i).Attr[n]=attr
+	//			}
+	//		}
+	//
+	//	}
+	//	node=doc.Find("script")
+	//	for i:=0;i<node.Length();i++{
+	//		for n,attr:=range node.Get(i).Attr{
+	//			if attr.Key=="src"&&!strings.HasPrefix(attr.Val,"http://")&&!strings.HasPrefix(attr.Val,"https://"){
+	//				attr.Val=URL.Scheme+"://"+URL.Host+attr.Val
+	//				node.Get(i).Attr[n]=attr
+	//			}
+	//		}
+	//
+	//	}
+	//
+	//	node=doc.Find("img")
+	//	for i:=0;i<node.Length();i++{
+	//		for n,attr:=range node.Get(i).Attr{
+	//			if attr.Key=="src"&&!strings.HasPrefix(attr.Val,"http://")&&!strings.HasPrefix(attr.Val,"https://"){
+	//				attr.Val=URL.Scheme+"://"+URL.Host+attr.Val
+	//				node.Get(i).Attr[n]=attr
+	//			}
+	//		}
+	//
+	//	}
+	//
+	//	node=doc.Find("a")
+	//	for i:=0;i<node.Length();i++{
+	//		for n,attr:=range node.Get(i).Attr{
+	//			if attr.Key=="href"&&!strings.HasPrefix(attr.Val,"http://")&&!strings.HasPrefix(attr.Val,"https://"){
+	//				attr.Val=URL.Scheme+"://"+URL.Host+attr.Val
+	//				node.Get(i).Attr[n]=attr
+	//			}
+	//		}
+	//
+	//	}
+	//	html,e:=doc.Html()
+	//	fmt.Println(html)
+	//	if e!=nil{
+	//		w.Write([]byte(e.Error()))
+	//		return
+	//	}
+	//	w.Write([]byte(html))
+	//})
 	http.ListenAndServe(":"+addr, nil)
 }
 func (w *window) startChrome(url string) {
@@ -149,17 +211,17 @@ func (w *window) Close() {
 	w.closeChannel <- 1
 }
 
-func (w *window) Navigation(staticHtmlPath string) {
+func (w *window) Navigation(htmlPath string) {
 	initChannel := make(chan int, 1)
 	go func() {
 		if !w.inited {
 			w.inited = true
 			w.startChrome(fmt.Sprintf("http://localhost:%s/html/%s", w.addr, DEFAULT_HTML_NAME))
 		}
-		if strings.HasPrefix(staticHtmlPath,"http://")||strings.HasPrefix(staticHtmlPath,"https://"){
-			w.currentUrl =  fmt.Sprintf("http://localhost:%s/remote?url=%s", w.addr, staticHtmlPath)
+		if strings.HasPrefix(htmlPath,"http://")||strings.HasPrefix(htmlPath,"https://"){
+			w.currentUrl =  htmlPath
 		}else{
-			w.currentUrl = fmt.Sprintf("http://localhost:%s/html/%s", w.addr, staticHtmlPath)
+			w.currentUrl = fmt.Sprintf("http://localhost:%s/html/%s", w.addr, htmlPath)
 		}
 		if w.wl == nil {
 			<-w.wlWaitChannel
