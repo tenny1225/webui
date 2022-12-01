@@ -1,7 +1,6 @@
 package webui
 
-
-const DEFAULT_HTML=`
+const DEFAULT_HTML = `
 <html>
 <title>%s</title>
 <body style="margin:0;padding:0;background-color:#ffffff;">
@@ -47,6 +46,7 @@ const DEFAULT_HTML=`
                 }
                 iframe.contentWindow[fs[0]] = {};
                 iframe.contentWindow[fs[0]][fs[1]] = function () {
+                    console.log("submit method",fs);
                     let data = {FuncName: fs, Params: []};
                     let callback = null;
                     if (arguments.length > 0) {
@@ -85,7 +85,7 @@ const DEFAULT_HTML=`
 
 </script>
 `
-const NOT_FOUND_CHROME_HTML  = `
+const NOT_FOUND_CHROME_HTML = `
 <h1>Chrome not found on this computer,please install it first!</h1>
 `
 const DEFAULT_HTML_NAME = "DEFAULT.html"

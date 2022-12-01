@@ -3,14 +3,16 @@ package webui
 import (
 	"bytes"
 	"fmt"
-	"golang.org/x/net/websocket"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
 	"time"
+
+	"golang.org/x/net/websocket"
 )
 
 type Window interface {
@@ -35,6 +37,20 @@ func NewWindow(title string, x, y, w, h int64, staticPath string) Window {
 		staticPath:    staticPath,
 		closeChannel:  make(chan int, 1),
 		wlWaitChannel: make(chan int, 1),
+		args:          make([]string, 0),
+	}
+}
+func NewCommandsWindow(title string, x, y, w, h int64, staticPath string, commands []string) Window {
+	return &window{
+		title:         title,
+		w:             w,
+		h:             h,
+		x:             x,
+		y:             y,
+		staticPath:    staticPath,
+		closeChannel:  make(chan int, 1),
+		wlWaitChannel: make(chan int, 1),
+		args:          commands,
 	}
 }
 
@@ -51,6 +67,7 @@ type window struct {
 	inited        bool
 	wl            *webSocketListener
 	wlWaitChannel chan int
+	args          []string
 }
 
 func (w *window) HandleFunc(p string, f func(w http.ResponseWriter, r *http.Request)) {
@@ -66,7 +83,7 @@ func (w *window) RunAndBindPort(addr string, fun func()) {
 	w.addr = addr
 	go w.startHttpService(addr)
 	<-time.Tick(time.Second)
-	if fun!=nil{
+	if fun != nil {
 		go fun()
 	}
 	<-w.closeChannel
@@ -92,9 +109,10 @@ func (win *window) startHttpService(addr string) {
 		w.Header().Add("Content-Disposition", "attachment;filename="+fn)
 		io.Copy(w, f)
 	})
-	http.HandleFunc("/html/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
+	http.HandleFunc("/"+path.Base(win.staticPath)+"/", func(w http.ResponseWriter, r *http.Request) {
+
 		f := path.Base(r.URL.Path)
+
 		var buf []byte
 		if f == DEFAULT_HTML_NAME {
 			html := fmt.Sprintf(DEFAULT_HTML,
@@ -102,101 +120,37 @@ func (win *window) startHttpService(addr string) {
 				win.currentUrl,
 				win.addr)
 			buf = []byte(html)
+			w.WriteHeader(200)
+			w.Write(buf)
 		} else if f == NOT_FOUND_CHROME_HTML_NAME {
 			buf = []byte(NOT_FOUND_CHROME_HTML)
+			w.WriteHeader(404)
+			w.Write(buf)
 		} else {
 			var e error
-			fn := path.Join(win.staticPath, f)
-			buf, e = os.ReadFile(fn)
+			fn := path.Join(win.staticPath, strings.TrimPrefix(r.URL.Path, "/"+path.Base(win.staticPath)))
+			buf, e = ioutil.ReadFile(fn)
 			if e != nil {
 				w.Write([]byte(e.Error()))
 				return
 			}
+			if path.Ext(fn) == ".css" {
+				w.Header().Set("Content-Type", "text/css; charset=utf-8")
+			}
+			w.WriteHeader(200)
+			w.Write(buf)
 		}
 
-		w.Write(buf)
 	})
-	//http.HandleFunc("/remote", func(w http.ResponseWriter, r *http.Request) {
-	//	r.ParseForm()
-	//	uri := r.FormValue("url")
-	//	rep,e:=http.Get(uri)
-	//
-	//	if e!=nil{
-	//		w.Write([]byte(e.Error()))
-	//		return
-	//	}
-	//	doc,e:=goquery.NewDocumentFromReader(rep.Body)
-	//	if e!=nil{
-	//		w.Write([]byte(e.Error()))
-	//		return
-	//	}
-	//	URL,e:=url.Parse(uri)
-	//	if e!=nil{
-	//		w.Write([]byte(e.Error()))
-	//		return
-	//	}
-	//
-	//	node:=doc.Find("link")
-	//	for i:=0;i<node.Length();i++{
-	//		for n,attr:=range node.Get(i).Attr{
-	//			if attr.Key=="href"&&!strings.HasPrefix(attr.Val,"http://")&&!strings.HasPrefix(attr.Val,"https://"){
-	//
-	//				attr.Val=URL.Scheme+"://"+URL.Host+attr.Val
-	//
-	//				node.Get(i).Attr[n]=attr
-	//			}
-	//		}
-	//
-	//	}
-	//	node=doc.Find("script")
-	//	for i:=0;i<node.Length();i++{
-	//		for n,attr:=range node.Get(i).Attr{
-	//			if attr.Key=="src"&&!strings.HasPrefix(attr.Val,"http://")&&!strings.HasPrefix(attr.Val,"https://"){
-	//				attr.Val=URL.Scheme+"://"+URL.Host+attr.Val
-	//				node.Get(i).Attr[n]=attr
-	//			}
-	//		}
-	//
-	//	}
-	//
-	//	node=doc.Find("img")
-	//	for i:=0;i<node.Length();i++{
-	//		for n,attr:=range node.Get(i).Attr{
-	//			if attr.Key=="src"&&!strings.HasPrefix(attr.Val,"http://")&&!strings.HasPrefix(attr.Val,"https://"){
-	//				attr.Val=URL.Scheme+"://"+URL.Host+attr.Val
-	//				node.Get(i).Attr[n]=attr
-	//			}
-	//		}
-	//
-	//	}
-	//
-	//	node=doc.Find("a")
-	//	for i:=0;i<node.Length();i++{
-	//		for n,attr:=range node.Get(i).Attr{
-	//			if attr.Key=="href"&&!strings.HasPrefix(attr.Val,"http://")&&!strings.HasPrefix(attr.Val,"https://"){
-	//				attr.Val=URL.Scheme+"://"+URL.Host+attr.Val
-	//				node.Get(i).Attr[n]=attr
-	//			}
-	//		}
-	//
-	//	}
-	//	html,e:=doc.Html()
-	//	fmt.Println(html)
-	//	if e!=nil{
-	//		w.Write([]byte(e.Error()))
-	//		return
-	//	}
-	//	w.Write([]byte(html))
-	//})
 	http.ListenAndServe(":"+addr, nil)
 }
 func (w *window) startChrome(url string) {
 	commandReader := bytes.NewBuffer([]byte{})
 	go func() {
 		defer w.Close()
-		bash, args := GetLocalChromeBash(w.x, w.y, w.w, w.h, url)
+		bash, args := GetLocalChromeBash(w.x, w.y, w.w, w.h, url, w.staticPath, w.args)
 		if bash == "" {
-			openDefaultWebView(fmt.Sprintf("http://localhost:%s/html/%s", w.addr, NOT_FOUND_CHROME_HTML_NAME))
+			openDefaultWebView(fmt.Sprintf("http://localhost:%s/%s/%s", w.addr, path.Base(w.staticPath), NOT_FOUND_CHROME_HTML_NAME))
 			time.Sleep(time.Second * 5)
 			return
 		}
@@ -216,12 +170,12 @@ func (w *window) Navigation(htmlPath string) {
 	go func() {
 		if !w.inited {
 			w.inited = true
-			w.startChrome(fmt.Sprintf("http://localhost:%s/html/%s", w.addr, DEFAULT_HTML_NAME))
+			w.startChrome(fmt.Sprintf("http://localhost:%s/%s/%s", w.addr, path.Base(w.staticPath), DEFAULT_HTML_NAME))
 		}
-		if strings.HasPrefix(htmlPath,"http://")||strings.HasPrefix(htmlPath,"https://"){
-			w.currentUrl =  htmlPath
-		}else{
-			w.currentUrl = fmt.Sprintf("http://localhost:%s/html/%s", w.addr, htmlPath)
+		if strings.HasPrefix(htmlPath, "http://") || strings.HasPrefix(htmlPath, "https://") {
+			w.currentUrl = htmlPath
+		} else {
+			w.currentUrl = fmt.Sprintf("http://localhost:%s/%s/%s", w.addr, path.Base(w.staticPath), htmlPath)
 		}
 		if w.wl == nil {
 			<-w.wlWaitChannel

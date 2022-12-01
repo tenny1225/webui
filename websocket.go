@@ -2,50 +2,52 @@ package webui
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
-	"golang.org/x/net/websocket"
+	"fmt"
 	"reflect"
 	"sync"
+
+	"github.com/google/uuid"
+	"golang.org/x/net/websocket"
 )
 
 type webSocketListener struct {
-	conn             *websocket.Conn
-	requestCallback   map[string]interface{}
-	requestHandler *sync.Map
+	conn            *websocket.Conn
+	requestCallback map[string]interface{}
+	requestHandler  *sync.Map
 }
 
 func NewWebSocketListener(conn *websocket.Conn) *webSocketListener {
 	wb := &webSocketListener{
-		conn:           conn,
+		conn:            conn,
 		requestCallback: make(map[string]interface{}),
-		requestHandler:&sync.Map{},
+		requestHandler:  &sync.Map{},
 	}
 	return wb
 }
-func (w *webSocketListener) putRequestHandler(k string,i interface{}) {
+func (w *webSocketListener) putRequestHandler(k string, i interface{}) {
 
 	typeType := reflect.TypeOf(i)
 	if typeType.Kind() == reflect.Ptr {
-		if k==""{
+		if k == "" {
 			k = typeType.Elem().Name()
 		}
-		w.requestHandler.Store(k,i)
+		w.requestHandler.Store(k, i)
 		for i := 0; i < typeType.NumMethod(); i++ {
 			m := Message{}
 			m.Type = "MethodBind"
-			m.FuncName = []string{k,typeType.Method(i).Name}
+			m.FuncName = []string{k, typeType.Method(i).Name}
 			go w.send(m, nil)
 		}
 	}
 
 }
 func (w *webSocketListener) removeRequestHandler(k string) {
-	if v,ok:=w.requestHandler.Load(k);ok{
+	if v, ok := w.requestHandler.Load(k); ok {
 		typeType := reflect.TypeOf(v)
 		for i := 0; i < typeType.NumMethod(); i++ {
 			m := Message{}
 			m.Type = "RemoveBind"
-			m.FuncName = []string{k,typeType.Method(i).Name}
+			m.FuncName = []string{k, typeType.Method(i).Name}
 			go w.send(m, nil)
 		}
 		w.requestHandler.Delete(k)
@@ -58,6 +60,7 @@ func (w *webSocketListener) listen() {
 		if e := websocket.Message.Receive(w.conn, &replay); e != nil {
 			break
 		}
+		fmt.Println("listen", replay)
 		var m Message
 		if e := json.Unmarshal([]byte(replay), &m); e == nil {
 
@@ -126,15 +129,15 @@ func (w *webSocketListener) listen() {
 				}
 
 			} else {
-				if m.FuncName==nil||len(m.FuncName)!=2{
+				if m.FuncName == nil || len(m.FuncName) != 2 {
 					continue
 				}
-				if value,ok:=w.requestHandler.Load(m.FuncName[0]);ok {
+				if value, ok := w.requestHandler.Load(m.FuncName[0]); ok {
 
 					valueType := reflect.ValueOf(value)
 					typeType := reflect.TypeOf(value)
 					for i := 0; i < valueType.NumMethod(); i++ {
-						if  typeType.Method(i).Name == m.FuncName[1] {
+						if typeType.Method(i).Name == m.FuncName[1] {
 							if valueType.Method(i).Type().NumIn() == len(m.Params) {
 								is := true
 								var params []reflect.Value
@@ -143,6 +146,7 @@ func (w *webSocketListener) listen() {
 									for j, v := range m.Params {
 										val := reflect.ValueOf(v)
 										in := valueType.Method(i).Type().In(j)
+										fmt.Println(in.Kind(), val.Kind())
 										if in.Kind() != val.Kind() {
 											if val.Kind() <= reflect.Float64 && val.Kind() >= in.Kind() {
 												newValue := reflect.New(in).Elem()
@@ -230,5 +234,5 @@ func (w *webSocketListener) send(m Message, fun interface{}) error {
 	if fun != nil {
 		w.requestCallback[m.Id] = fun
 	}
-	return websocket.JSON.Send(w.conn, m);
+	return websocket.JSON.Send(w.conn, m)
 }

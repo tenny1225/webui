@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"runtime"
 )
 
@@ -38,20 +39,21 @@ var defaultChromeArgs = []string{
 	//"--disable-web-security",
 }
 
-func GetLocalChromeBash(x,y,w, h int64, url string) (string, []string) {
-	args := append(defaultChromeArgs, fmt.Sprintf("--app=%s", url))
-	userDir:="/tmp"
-	if runtime.GOOS=="windows"{
-		userDir="C:\tmp"
-	}
+func GetLocalChromeBash(x, y, w, h int64, url, userDir string, args []string) (string, []string) {
+	args = append(args, defaultChromeArgs...)
+	args = append(args, fmt.Sprintf("--app=%s", url))
+	// userDir:="/tmp"
+	// if runtime.GOOS=="windows"{
+	// 	userDir="C:\tmp"
+	// }
+	userDir = path.Join(userDir, ".user-dir")
 	args = append(args, fmt.Sprintf("--user-data-dir=%s", userDir))
 	args = append(args, fmt.Sprintf("--window-size=%d,%d", w, h))
 	args = append(args, "--remote-debugging-port=0")
-	args = append(args, fmt.Sprintf("--window-position=%d,%d",x,y))
+	args = append(args, fmt.Sprintf("--window-position=%d,%d", x, y))
 	return localChromePath(), args
 
 }
-
 
 func localChromePath() string {
 	if path, ok := os.LookupEnv("LORCACHROME"); ok {
@@ -102,9 +104,6 @@ func localChromePath() string {
 	}
 	return ""
 }
-
-
-
 
 // Open calls the OS default program for uri
 func openDefaultWebView(uri string) error {
