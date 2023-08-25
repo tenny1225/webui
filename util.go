@@ -36,7 +36,9 @@ var defaultChromeArgs = []string{
 	"--disable-ipc-flooding-protection",
 	"--disable-popup-blocking",
 	"--disable-prompt-on-repost",
-	//"--disable-web-security",
+	"--ignore-certificate-errors",
+	"--allow-running-insecure-content",
+	"--disable-web-security",
 }
 
 func GetLocalChromeBash(x, y, w, h int64, url, userDir string, args []string) (string, []string) {

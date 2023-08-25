@@ -44,7 +44,7 @@ const DEFAULT_HTML = `
                 if (fs.length != 2) {
                     return;
                 }
-                iframe.contentWindow[fs[0]] = {};
+                if(!iframe.contentWindow[fs[0]])iframe.contentWindow[fs[0]] = {};
                 iframe.contentWindow[fs[0]][fs[1]] = function () {
                     console.log("submit method",fs);
                     let data = {FuncName: fs, Params: []};
