@@ -39,6 +39,7 @@ var defaultChromeArgs = []string{
 	"--ignore-certificate-errors",
 	"--allow-running-insecure-content",
 	"--disable-web-security",
+	"--disable-site-isolation-trials",
 }
 
 func GetLocalChromeBash(x, y, w, h int64, url, userDir string, args []string) (string, []string) {
