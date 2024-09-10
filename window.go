@@ -77,6 +77,7 @@ func (w *window) Run(fun func()) {
 	w.RunAndBindPort("8000", fun)
 }
 func (w *window) RunAndBindPort(addr string, fun func()) {
+	fmt.Println("RunAndBindPort")
 	if strings.HasPrefix(addr, ":") {
 		addr = addr[1:]
 	}
@@ -112,6 +113,7 @@ func (win *window) startHttpService(addr string) {
 	http.HandleFunc("/"+path.Base(win.staticPath)+"/", func(w http.ResponseWriter, r *http.Request) {
 
 		f := path.Base(r.URL.Path)
+		fmt.Println("f=", f)
 
 		var buf []byte
 		if f == DEFAULT_HTML_NAME {
@@ -146,11 +148,13 @@ func (win *window) startHttpService(addr string) {
 }
 func (w *window) startChrome(url string) {
 	commandReader := bytes.NewBuffer([]byte{})
+	fmt.Println("uri", url)
 	go func() {
 		defer w.Close()
 		bash, args := GetLocalChromeBash(w.x, w.y, w.w, w.h, url, w.staticPath, w.args)
 		if bash == "" {
-			openDefaultWebView(fmt.Sprintf("http://localhost:%s/%s/%s", w.addr, path.Base(w.staticPath), NOT_FOUND_CHROME_HTML_NAME))
+			uri := fmt.Sprintf("http://localhost:%s/%s/%s", w.addr, path.Base(w.staticPath), NOT_FOUND_CHROME_HTML_NAME)
+			openDefaultWebView(uri)
 			time.Sleep(time.Second * 5)
 			return
 		}

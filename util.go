@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 	"runtime"
 )
 
@@ -39,6 +38,8 @@ var defaultChromeArgs = []string{
 	"--ignore-certificate-errors",
 	"--allow-running-insecure-content",
 	"--disable-web-security",
+	"-–allow-file-access-from-files",
+	"--disable-site-isolation-trials",
 }
 
 func GetLocalChromeBash(x, y, w, h int64, url, userDir string, args []string) (string, []string) {
@@ -48,7 +49,7 @@ func GetLocalChromeBash(x, y, w, h int64, url, userDir string, args []string) (s
 	// if runtime.GOOS=="windows"{
 	// 	userDir="C:\tmp"
 	// }
-	userDir = path.Join(userDir, ".user-dir")
+	userDir = os.TempDir()
 	args = append(args, fmt.Sprintf("--user-data-dir=%s", userDir))
 	args = append(args, fmt.Sprintf("--window-size=%d,%d", w, h))
 	args = append(args, "--remote-debugging-port=0")
