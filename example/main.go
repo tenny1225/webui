@@ -1,7 +1,7 @@
 package main
 
 import (
-	"time"
+	"fmt"
 
 	"github.com/tenny1225/webui"
 )
@@ -18,10 +18,11 @@ func (x *X) Gds() {
 func main() {
 	w := webui.NewWindow("xz", 300, 300, 400, 500, "./html")
 	w.Run(func() {
-		w.Navigation("xz.html")
-		w.BindWithName("X", &X{w})
-		time.Sleep(time.Second*2)
-		w.Close()
+		w.Navigation("https://s.weibo.com/weibo?q=特朗普怕了")
+		w.Eval("document.documentElement.innerHTML", func(str string) {
+			fmt.Println(str)
+			w.Close()
+		})
 	})
 
 }

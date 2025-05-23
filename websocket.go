@@ -55,17 +55,19 @@ func (w *webSocketListener) removeRequestHandler(k string) {
 	}
 }
 func (w *webSocketListener) listen() {
-
+	content := ""
 	for {
 		var replay string
 		if e := websocket.Message.Receive(w.conn, &replay); e != nil {
 			fmt.Println("err", e)
 			break
 		}
-		fmt.Println("listen", replay)
+		content += replay
+		//fmt.Println(content)
+		//os.WriteFile("test.jon",[]byte(content),)
 		var m Message
-		if e := json.Unmarshal([]byte(replay), &m); e == nil {
-
+		if e := json.Unmarshal([]byte(content), &m); e == nil {
+			content = ""
 			if fun, ok := w.requestCallback[m.Id]; ok {
 				reflectType := reflect.TypeOf(fun)
 				if reflectType.Kind() != reflect.Func {
@@ -82,8 +84,10 @@ func (w *webSocketListener) listen() {
 				obj := reflect.New(reflectType.In(0)).Elem()
 				valueType := reflect.ValueOf(fun)
 				is := false
+				fmt.Println("m.Data.(type)", m.Data)
 				switch m.Data.(type) {
 				case string:
+					fmt.Println("string")
 					obj.SetString(m.Data.(string))
 					is = true
 				case float64:
@@ -127,7 +131,7 @@ func (w *webSocketListener) listen() {
 				case map[interface{}]interface{}:
 				}
 				if is {
-					go valueType.Call([]reflect.Value{obj})
+					go valueType.Call([]reflect.Value{reflect.ValueOf(m.Data)})
 				}
 
 			} else {
@@ -213,6 +217,8 @@ func (w *webSocketListener) listen() {
 				}
 
 			}
+		} else {
+			fmt.Println("e", e)
 		}
 
 	}
