@@ -149,7 +149,7 @@ func (win *window) startHttpService(addr string) {
 		}
 
 	})
-	win.server = &http.Server{Addr: addr}
+	win.server = &http.Server{Addr: ":" + addr}
 	win.server.ListenAndServe()
 	//http.ListenAndServe(":"+addr, nil)
 }
