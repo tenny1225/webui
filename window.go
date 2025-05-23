@@ -2,6 +2,7 @@ package webui
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -68,6 +69,7 @@ type window struct {
 	wl            *webSocketListener
 	wlWaitChannel chan int
 	args          []string
+	server        *http.Server
 }
 
 func (w *window) HandleFunc(p string, f func(w http.ResponseWriter, r *http.Request)) {
@@ -91,8 +93,11 @@ func (w *window) RunAndBindPort(addr string, fun func()) {
 }
 func (win *window) startHttpService(addr string) {
 	http.Handle("/ws", websocket.Handler(func(wc *websocket.Conn) {
+		fmt.Println("ws listen 0")
 		win.wl = NewWebSocketListener(wc)
-		win.wlWaitChannel <- 1
+		fmt.Println("ws listen1 ")
+		//win.wlWaitChannel <- 1
+		fmt.Println("ws listen")
 		win.wl.listen()
 	}))
 	http.HandleFunc("/file", func(w http.ResponseWriter, r *http.Request) {
@@ -144,7 +149,9 @@ func (win *window) startHttpService(addr string) {
 		}
 
 	})
-	http.ListenAndServe(":"+addr, nil)
+	win.server = &http.Server{Addr: addr}
+	win.server.ListenAndServe()
+	//http.ListenAndServe(":"+addr, nil)
 }
 func (w *window) startChrome(url string) {
 	commandReader := bytes.NewBuffer([]byte{})
@@ -166,6 +173,7 @@ func (w *window) startChrome(url string) {
 	commandReader.Next(10)
 }
 func (w *window) Close() {
+	w.server.Shutdown(context.Background())
 	w.closeChannel <- 1
 }
 
@@ -181,9 +189,12 @@ func (w *window) Navigation(htmlPath string) {
 		} else {
 			w.currentUrl = fmt.Sprintf("http://localhost:%s/%s/%s", w.addr, path.Base(w.staticPath), htmlPath)
 		}
-		if w.wl == nil {
-			<-w.wlWaitChannel
+		for w.wl == nil {
+			time.Sleep(time.Second)
 		}
+		// if w.wl == nil {
+		// 	<-w.wlWaitChannel
+		// }
 		w.wl.navigation(`document.getElementById("iframe").src="`+w.currentUrl+`"`, func() {
 			initChannel <- 1
 		})

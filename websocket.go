@@ -36,6 +36,7 @@ func (w *webSocketListener) putRequestHandler(k string, i interface{}) {
 			m := Message{}
 			m.Type = "MethodBind"
 			m.FuncName = []string{k, typeType.Method(i).Name}
+			fmt.Println("MethodBind", m.FuncName)
 			go w.send(m, nil)
 		}
 	}
@@ -58,6 +59,7 @@ func (w *webSocketListener) listen() {
 	for {
 		var replay string
 		if e := websocket.Message.Receive(w.conn, &replay); e != nil {
+			fmt.Println("err", e)
 			break
 		}
 		fmt.Println("listen", replay)

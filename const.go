@@ -8,15 +8,18 @@ const DEFAULT_HTML = `
 </body>
 </html>
 <script>
-    var wsServer = 'ws://127.0.0.1:%s/ws';
+    console.log("start!")
+    var wsServer = 'ws://localhost:%s/ws';
     var websocket;
     var requestMap = {};
     var iframe;
     window.onload = function () {
         iframe = document.getElementById("iframe");
+        console.log("onload!")
         startWebsocket();
     }
     function startWebsocket() {
+        console.log("start websocket!")
         websocket = new WebSocket(wsServer);
         websocket.onopen = function (evt) {
             console.log(evt)
