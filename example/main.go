@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/tenny1225/webui"
 )
 
@@ -18,6 +20,8 @@ func main() {
 	w.Run(func() {
 		w.Navigation("xz.html")
 		w.BindWithName("X", &X{w})
+		time.Sleep(time.Second*2)
+		w.Close()
 	})
 
 }

@@ -70,6 +70,7 @@ type window struct {
 	wlWaitChannel chan int
 	args          []string
 	server        *http.Server
+	cmd            *exec.Cmd
 }
 
 func (w *window) HandleFunc(p string, f func(w http.ResponseWriter, r *http.Request)) {
@@ -165,15 +166,17 @@ func (w *window) startChrome(url string) {
 			time.Sleep(time.Second * 5)
 			return
 		}
-		cmd := exec.Command(bash, args...)
-		cmd.Stdout = commandReader
-		cmd.Start()
-		cmd.Wait()
+		w.cmd = exec.Command(bash, args...)
+		w.cmd.Stdout = commandReader
+		w.cmd.Start()
+		w.cmd.Wait()
 	}()
 	commandReader.Next(10)
 }
 func (w *window) Close() {
+	
 	w.server.Shutdown(context.Background())
+	w.cmd.Process.Kill()
 	w.closeChannel <- 1
 }
 
