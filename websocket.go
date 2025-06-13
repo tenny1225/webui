@@ -84,7 +84,7 @@ func (w *webSocketListener) listen() {
 				obj := reflect.New(reflectType.In(0)).Elem()
 				valueType := reflect.ValueOf(fun)
 				is := false
-				fmt.Println("m.Data.(type)", m.Data)
+				//fmt.Println("m.Data.(type)", m.Data)
 				switch m.Data.(type) {
 				case string:
 					fmt.Println("string")
